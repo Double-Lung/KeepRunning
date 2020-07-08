@@ -4,6 +4,7 @@ using UnityEngine;
 public class CarController : MonoBehaviour
 {
     public Transform player;
+    private PlayerInput playerInput;
     public PlayerMovement playerMovement;
     [Range(0,1)]
     public float speedBonus = 0.1f;
@@ -18,22 +19,26 @@ public class CarController : MonoBehaviour
     private float maxSpeed;
     public float smashCountdown = 3;
     [SerializeField]  private float timeLeft;
-    float refSpeed;
+    private float refSpeed;
     public float smoothTime;
     private int prevState;
-    Animator animator;
+    private Animator animator;
     public event Action closeRangeAction;
-    CarAudio carAudio;
+    private CarAudio carAudio;
+    private float startTime;
 
     void Awake()
     {
+        animator = GetComponent<Animator>();
+        carAudio = GetComponent<CarAudio>();
+        playerInput = player.GetComponent<PlayerInput>();
         states = 3;
         targetSpeed = 0;
         maxSpeed = 0;
         nextDropTime = 0;
         timeLeft = smashCountdown;
-        animator = GetComponent<Animator>();
-        carAudio = GetComponent<CarAudio>();
+        startTime = Time.time;
+        playerInput.onPause += OnPause;
     }
 
     void Update()
@@ -45,7 +50,6 @@ public class CarController : MonoBehaviour
         speed = Mathf.SmoothDamp(speed, targetSpeed, ref refSpeed, smoothTime);
         UIManager.instance.updateCarSpeed(speed);
         transform.Translate(Vector2.right*speed*Time.deltaTime);
-        
     }
 
     void AudioToggler() {
@@ -112,7 +116,7 @@ public class CarController : MonoBehaviour
     void UpdateStates() {
         prevState = states;
         float distance = player.position.x - transform.position.x;
-        if (states == 3 && Time.time< 3) {
+        if (states == 3 && Time.time< startTime+2.5f) {
             return;
         }
         if (distance < 2) {
@@ -143,5 +147,12 @@ public class CarController : MonoBehaviour
             }
         }
         targetSpeed = Mathf.Clamp(targetSpeed, 10, speed*1.2f);
+    }
+
+    void OnPause() {
+        states = 3;
+        speed = 0;
+        startTime = Time.time + 31536000;
+        playerInput.onPause -= OnPause;
     }
 }

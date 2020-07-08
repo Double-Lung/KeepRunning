@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using UnityEngine;
 using UnityEngine.Audio;
 
@@ -38,6 +39,20 @@ public class AudioManager : MonoBehaviour {
         s.source.Stop();
     }
 
+    public void FadeOut(string name, float time) {
+        Sound s = Array.Find(sounds, sound => sound.name == name);
+        StartCoroutine(AuidoLinearFade(time,s.source));
+    }
+
+    IEnumerator AuidoLinearFade(float time, AudioSource source) {
+        float amount = source.volume;
+        while (source.volume > 0) {
+            source.volume -= amount * Time.deltaTime / time;
+            yield return null;
+        }
+        source.Stop();
+        source.volume = amount;
+    }
 
     [Serializable]
     public class Sound {

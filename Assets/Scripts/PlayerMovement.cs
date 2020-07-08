@@ -7,16 +7,17 @@ public class PlayerMovement : MonoBehaviour
     public float speed { get; private set; }
     public float smoothTime;
     public float stepSize;
-    PlayerInput playerInput;
-    Animator animator;
-    float refSpeed;
-    bool startAudio;
+    private PlayerInput playerInput;
+    private Animator animator;
+    private float refSpeed;
+    private bool startAudio;
     // Start is called before the first frame update
     void Start()
     {
         animator = GetComponent<Animator>();
         playerInput = GetComponent<PlayerInput>();
         playerInput.onKeyPress += walk;
+        playerInput.onPause += OnPause;
         speed = 0;
         startAudio = false;
     }
@@ -37,5 +38,10 @@ public class PlayerMovement : MonoBehaviour
         transform.Translate(Vector2.right * speed * Time.deltaTime);
         UIManager.instance.updatePlayerSpeed(speed);
         speed = Mathf.SmoothDamp(speed, 0, ref refSpeed, smoothTime);
+    }
+    
+    void OnPause() {
+        playerInput.onKeyPress -= walk;
+        playerInput.onPause -= OnPause;
     }
 }

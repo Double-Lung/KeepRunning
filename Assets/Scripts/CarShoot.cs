@@ -18,8 +18,9 @@ public class CarShoot : MonoBehaviour {
     void shoot() {
         if (Time.time > nextFireTime) {
             nextFireTime = Time.time + fireRate;
-            playerHealth.TakeDamage();
-            if (playerHealth.health < 1) {
+            if (playerHealth.health > 0) {
+                playerHealth.TakeDamage(1);
+            } else {
                 carController.closeRangeAction -= shoot;
             }
         }

@@ -6,13 +6,15 @@ public class PlayerHealth : MonoBehaviour
 {
     public int health;
     public int maxHealth = 10;
-    PlayerMovement playerMovement;
-    Animator animator;
+    private PlayerMovement playerMovement;
+    private Animator animator;
+    private PlayerDistance playerDistance;
     // Start is called before the first frame update
     void Awake()
     {
         animator = GetComponent<Animator>();
         playerMovement = GetComponent<PlayerMovement>();
+        playerDistance = GetComponent<PlayerDistance>();
     }
 
     private void Start() {
@@ -20,22 +22,16 @@ public class PlayerHealth : MonoBehaviour
         UIManager.instance.initializeHealth(maxHealth);
     }
 
-    public void TakeDamage() {
-        health--;
+    public void TakeDamage(int amount) {
+        health-= amount;
+        health = Mathf.Clamp(health, 0, 10);
         UIManager.instance.updateHealth(health);
         if (health < 1) {
             die();
         }
     }
-
-    public void TakeFullDamage() {
-        health = 0;
-        UIManager.instance.updateHealth(health);
-        die();
-    }
-
     void die() {
-
+        playerDistance.UpdateScore();
         StartCoroutine(dieRoutine());
         // play music/cutscene 
     }

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
@@ -9,6 +10,8 @@ public class UIManager : MonoBehaviour
     public SpeedDisplay speedDisplay;
     public DistanceDisplay distanceDisplay;
     public Animator animator;
+    public GameObject PausePanel;
+    private bool paused;
 
     public static UIManager instance;
     private void Awake() {
@@ -38,5 +41,12 @@ public class UIManager : MonoBehaviour
 
     public void updateDistance(float distance) {
         distanceDisplay.distance.SetText(distance.ToString("F1"));
+    }
+
+    public void ShowPause() {
+        if (!paused) {
+            PausePanel.SetActive(true);
+            paused = true;
+        }
     }
 }
