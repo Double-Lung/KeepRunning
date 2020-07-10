@@ -25,13 +25,18 @@ public class CarController : MonoBehaviour
     private Animator animator;
     public event Action closeRangeAction;
     private CarAudio carAudio;
+    private PlayerFire playerFire;
     private float startTime;
+    private bool getHit;
+    private float debuffDuration = 2;
+    private float debuffEndTime;
 
     void Awake()
     {
         animator = GetComponent<Animator>();
         carAudio = GetComponent<CarAudio>();
         playerInput = player.GetComponent<PlayerInput>();
+        playerFire = player.GetComponent<PlayerFire>();
         states = 3;
         targetSpeed = 0;
         maxSpeed = 0;
@@ -39,6 +44,8 @@ public class CarController : MonoBehaviour
         timeLeft = smashCountdown;
         startTime = Time.time;
         playerInput.onPause += OnPause;
+        playerFire.onFire += ReduceSpeed;
+        getHit = false;
     }
 
     void Update()
@@ -57,14 +64,23 @@ public class CarController : MonoBehaviour
             case 0:
                 carAudio.isMoving = true;
                 carAudio.canFire = false;
+                if (prevState == 2) {
+                    AudioManager.instance.CrossFade("bgm", "bgm2", 1, false);
+                }
                 break;
             case 1:
                 carAudio.isMoving = true;
                 carAudio.canFire = false;
+                if (prevState == 2) {
+                    AudioManager.instance.CrossFade("bgm", "bgm2", 1, false);
+                }
                 break;
             case 2:
                 carAudio.isMoving = true;
                 carAudio.canFire = true;
+                if (prevState != 2) {
+                    AudioManager.instance.CrossFade("bgm2","bgm",1,false);
+                }
                 break;
             case 3:
                 carAudio.canFire = false;
@@ -75,7 +91,18 @@ public class CarController : MonoBehaviour
         }
     }
 
+    void ReduceSpeed() {
+        getHit = true;
+        debuffEndTime = Time.time + debuffDuration;
+        targetSpeed = 5;
+        speed *= 0.8f;
+    }
+
     void TargetSpeedModifier() {
+        if (getHit && Time.time < debuffEndTime) {
+            return;
+        }
+        getHit = false;
         switch (states) {
             case 0:
                 maxSpeed = Mathf.Max(maxSpeed, playerMovement.speed);
@@ -85,7 +112,7 @@ public class CarController : MonoBehaviour
                 if (prevState == 3) {
                     targetSpeed = 10;
                 } else if (prevState==0) {
-                    targetSpeed = Mathf.Clamp(targetSpeed,10,speed*0.7f);
+                    targetSpeed = Mathf.Clamp(targetSpeed,0,speed*0.7f);
                 }else {
                     MaintainSpeed();
                 }
@@ -116,6 +143,7 @@ public class CarController : MonoBehaviour
     void UpdateStates() {
         prevState = states;
         float distance = player.position.x - transform.position.x;
+        playerFire.accuracy = 1 - distance / 45;
         if (states == 3 && Time.time< startTime+2.5f) {
             return;
         }
@@ -123,11 +151,11 @@ public class CarController : MonoBehaviour
             states = 3;
             return;
         }
-        if (distance >= 35) {
+        if (distance >= 45) {
             states = 0;
             return;
         }
-        if (distance < 10) {
+        if (distance < 15) {
             states = 2;
             return;
         }

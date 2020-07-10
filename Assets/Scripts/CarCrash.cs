@@ -13,7 +13,7 @@ public class CarCrash : MonoBehaviour
 
     void Smash() {
         if (playerHealth.transform.position.x - transform.position.x < 3) {
-            playerHealth.TakeDamage(10);
+            playerHealth.TakeDamage(playerHealth.maxHealth);
             carController.closeRangeAction -= Smash;
         }
     }

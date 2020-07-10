@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,6 +10,7 @@ public class PlayerHealth : MonoBehaviour
     private PlayerMovement playerMovement;
     private Animator animator;
     private PlayerDistance playerDistance;
+    public event Action OnDie;
     // Start is called before the first frame update
     void Awake()
     {
@@ -24,7 +26,7 @@ public class PlayerHealth : MonoBehaviour
 
     public void TakeDamage(int amount) {
         health-= amount;
-        health = Mathf.Clamp(health, 0, 10);
+        health = Mathf.Clamp(health, 0, maxHealth);
         UIManager.instance.updateHealth(health);
         if (health < 1) {
             die();
@@ -32,6 +34,7 @@ public class PlayerHealth : MonoBehaviour
     }
     void die() {
         playerDistance.UpdateScore();
+        OnDie?.Invoke();
         StartCoroutine(dieRoutine());
         // play music/cutscene 
     }
@@ -39,7 +42,8 @@ public class PlayerHealth : MonoBehaviour
         playerMovement.enabled = false;
         animator.SetTrigger("die");
         AudioManager.instance.Play("wrud");
-        AudioManager.instance.Stop("bgm");
+        AudioManager.instance.FadeOut("bgm",3);
+        AudioManager.instance.FadeOut("bgm2", 3);
         yield return new WaitForSeconds(2);
         UIManager.instance.animator.SetTrigger("start");
         LevelManager.instance.LoadNextLevel();
